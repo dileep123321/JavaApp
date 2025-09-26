@@ -1,0 +1,1 @@
+{"doc":"Implements a basic landing page at endpoint `/`. ","fields":[],"enumConstants":[],"methods":[{"name":"root","paramTypes":[],"doc":"\n Returns a basic landing page for this application.\r\n\r\n @return Basic landing page in HTML format.\r\n"}],"constructors":[]}
