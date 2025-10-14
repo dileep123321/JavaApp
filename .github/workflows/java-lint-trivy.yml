@@ -1,4 +1,4 @@
-name: Trivy Docker Scan
+name: Java Lint and Trivy Scan
 
 on:
   push:
@@ -7,19 +7,43 @@ on:
     branches: [ main ]
 
 jobs:
-  trivy-scan:
-    name: Build Docker & Scan with Trivy
+  lint:
+    name: Java Linting
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Install Maven (if needed)
+        run: sudo apt-get install maven -y
+
+      - name: Run Checkstyle
+        run: ./mvnw checkstyle:check
+
+  trivy-scan:
+    name: Build Docker & Trivy Scan
+    runs-on: ubuntu-latest
+    needs: lint  # ✅ Run only if lint passes
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make Maven Wrapper executable (for Docker build)
+        run: chmod +x mvnw
+
       - name: Build Docker image
-        run: |
-          # Make Maven wrapper executable before Docker build
-          chmod +x mvnw
-          docker build -t javaapp:latest .
+        run: docker build -t javaapp:latest .
 
       - name: Scan filesystem with Trivy
         uses: aquasecurity/trivy-action@master
