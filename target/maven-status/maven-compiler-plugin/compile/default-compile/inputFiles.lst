@@ -1,0 +1,6 @@
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\App.java
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\controllers\RootController.java
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\controllers\WelcomeController.java
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\models\Welcome.java
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\security\AppSecurityConfiguration.java
+C:\Practice\java-docker-build-tutorial\src\main\java\com\miguno\javadockerbuild\security\CustomCsrfFilter.java
