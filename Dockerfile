@@ -27,6 +27,11 @@ RUN jlink \
 # Build and package the app.
 COPY . /usr/src/myapp/
 WORKDIR /usr/src/myapp/
+
+# Make Maven wrapper executable
+RUN chmod +x mvnw
+
+# Run Maven build
 RUN ./mvnw package
 
 ###############################################################################

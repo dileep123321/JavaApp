@@ -24,12 +24,8 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Install Maven (if you don’t use wrapper)
+      - name: Install Maven (if needed)
         run: sudo apt-get install maven -y
 
       - name: Run Checkstyle
         run: ./mvnw checkstyle:check
-
-      # Optional: full build
-      #- name: Build & verify package
-      #  run: ./mvnw --batch-mode verify package
