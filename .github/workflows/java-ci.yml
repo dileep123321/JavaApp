@@ -1,0 +1,76 @@
+name: Java CI/CD - Build & Push Multi-Stage Docker Image
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+
+      - name: Grant execute permission to Maven wrapper
+        run: chmod +x mvnw
+
+      - name: Run tests with Maven
+        run: ./mvnw clean verify
+
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: test-and-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and use Buildx builder
+        run: |
+          docker buildx create --name java-builder --driver docker-container --use || docker buildx use java-builder
+          docker buildx inspect --bootstrap
+
+      - name: Build Docker image (multi-stage)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: java-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update && sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.67.2/trivy_0.67.2_Linux-64bit.deb
+          sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
+
+      - name: Scan Docker image for vulnerabilities
+        run: trivy image --scanners vuln --exit-code 0 --severity CRITICAL,HIGH java-app:latest
+
+      - name: Debug secrets for Docker Hub
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+        run: |
+          if [ -z "$DOCKER_USER" ]; then echo "DOCKER_USER secret missing"; exit 1; fi
+          if [ -z "$DOCKER_PASS" ]; then echo "DOCKER_PASS secret missing"; exit 1; fi
+
+      - name: Docker login
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Tag and push Docker image
+        run: |
+          docker tag java-app:latest dileep1506/java-app:latest
+          docker push dileep1506/java-app:latest
